@@ -71,7 +71,7 @@ def copy_initial_page_folder(page_name):
     shutil.copytree("initial_page", page_name)
 
 def update_page_folder_endpoint_file(page_name, lambda_invocation_url):
-    with open(os.path.join(page_name, "endpoint", "w")) as endpoint_file:
+    with open(os.path.join(page_name, "endpoint"), "w") as endpoint_file:
         endpoint_file.write(lambda_invocation_url)
 
 api_id = create_new_api_gateway(page_name)

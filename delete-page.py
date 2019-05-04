@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import json
+import shutil
 
 if (len(sys.argv) != 2):
     print("Usage: python3 delete-page.py <page name>")
@@ -26,6 +27,9 @@ def delete_lambda(lambda_name):
     cmd = "aws lambda delete-function --function-name " + lambda_name
     subprocess.check_call(cmd, shell=True)
 
+def delete_folder(page_name):
+    shutil.rmtree(page_name)
+
 delete_api(get_api_id(api_name))
 delete_lambda(lambda_name)
-
+delete_folder(page_name)
