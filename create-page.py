@@ -3,7 +3,7 @@ import subprocess
 import json
 
 if (len(sys.argv) != 2):
-    print("Usage: python3 create-page-lambda.py <page name>")
+    print("Usage: python3 create-page.py <page name>")
     exit(1)
 
 page_name = sys.argv[1]
@@ -95,3 +95,5 @@ print("lambda_invocation_url = " + lambda_invocation_url)
 
 print("Command to delete lambda: " + delete_lambda_command(lambda_arn))
 print("Command to delete API: " + delete_api_command(api_id))
+
+print(lambda_invocation_url)
