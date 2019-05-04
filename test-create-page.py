@@ -6,7 +6,7 @@ last_line = output[len(output) - 1]
 url = last_line
 print("Got url " + url)
 response = requests.get(url)
-expected_text = '<!DOCTYPE html>\n<html>\n    <body>\n        <p>Welcome to my toy lambda, which deploys from my machine in a run of a single script! Cool!</p>\n    </body>\n</html>\n'
+expected_text = '<!DOCTYPE html>\n<html>\n    <body>\n        <p>Stubbed lambda</p>\n    </body>\n</html>\n'
 assert response.text == expected_text
 print("Pass")
 print("Now deleting page")
