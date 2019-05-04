@@ -68,7 +68,7 @@ def get_lambda_invocation_url(api_id, lambda_name):
     return "https://" + api_id + ".execute-api.eu-west-2.amazonaws.com/default/" + lambda_name
 
 def copy_initial_page_folder(page_name):
-    shutil.copytree("initial_page", page_name)
+    shutil.copytree("initial-page", page_name)
 
 def update_page_folder_endpoint_file(page_name, lambda_invocation_url):
     with open(os.path.join(page_name, "endpoint"), "w") as endpoint_file:
