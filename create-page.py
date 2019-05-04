@@ -1,6 +1,8 @@
 import sys
 import subprocess
 import json
+import shutil
+import os
 
 if (len(sys.argv) != 2):
     print("Usage: python3 create-page.py <page name>")
@@ -65,6 +67,13 @@ def add_lambda_execution_permissions(lambda_name, api_arn):
 def get_lambda_invocation_url(api_id, lambda_name):
     return "https://" + api_id + ".execute-api.eu-west-2.amazonaws.com/default/" + lambda_name
 
+def copy_initial_page_folder(page_name):
+    shutil.copytree("initial_page", page_name)
+
+def update_page_folder_endpoint_file(page_name, lambda_invocation_url):
+    with open(os.path.join(page_name, "endpoint", "w")) as endpoint_file:
+        endpoint_file.write(lambda_invocation_url)
+
 api_id = create_new_api_gateway(page_name)
 root_resource_id = get_root_resource_id(api_id)
 lambda_name = page_name + "-webpage"
@@ -78,4 +87,6 @@ create_deployment(api_id)
 api_arn = get_api_arn(api_id, lambda_arn, lambda_name)
 add_lambda_execution_permissions(lambda_name, api_arn)
 lambda_invocation_url = get_lambda_invocation_url(api_id, lambda_name)
+copy_initial_page_folder(page_name)
+update_page_folder_endpoint_file(page_name, lambda_invocation_url)
 print(lambda_invocation_url)
