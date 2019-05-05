@@ -58,7 +58,7 @@ def create_deployment(api_id):
     return aws_cmd(cmd)
 
 def get_api_arn(api_id, lambda_arn, lambda_name):
-    return lambda_arn.replace("lambda", "execute-api").replace("function:" + lambda_name, api_id)
+    return lambda_arn.replace("lambda", "execute-api", 1).replace("function:" + lambda_name, api_id)
 
 def add_lambda_execution_permissions(lambda_name, api_arn):
     cmd = "aws lambda add-permission --function-name " + lambda_name + " --statement-id apigateway-" + lambda_name + " --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn " + api_arn + "/default/GET/" + lambda_name + " --region eu-west-2"
