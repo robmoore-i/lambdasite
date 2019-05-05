@@ -67,11 +67,11 @@ def add_lambda_execution_permissions(lambda_name, api_arn):
 def get_lambda_invocation_url(api_id, lambda_name):
     return "https://" + api_id + ".execute-api.eu-west-2.amazonaws.com/default/" + lambda_name
 
-def copy_initial_page_folder(page_name):
-    shutil.copytree("initial-page", page_name)
+def copy_initial_page_folder(folder_name):
+    shutil.copytree("initial-page", folder_name)
 
-def update_page_folder_endpoint_file(page_name, lambda_invocation_url):
-    with open(os.path.join(page_name, "endpoint"), "w") as endpoint_file:
+def update_page_folder_endpoint_file(folder_name, lambda_invocation_url):
+    with open(os.path.join(folder_name, "endpoint"), "w") as endpoint_file:
         endpoint_file.write(lambda_invocation_url)
 
 api_id = create_new_api_gateway(page_name)
@@ -87,6 +87,7 @@ create_deployment(api_id)
 api_arn = get_api_arn(api_id, lambda_arn, lambda_name)
 add_lambda_execution_permissions(lambda_name, api_arn)
 lambda_invocation_url = get_lambda_invocation_url(api_id, lambda_name)
-copy_initial_page_folder(page_name)
-update_page_folder_endpoint_file(page_name, lambda_invocation_url)
+folder_name = lambda_name
+copy_initial_page_folder(folder_name)
+update_page_folder_endpoint_file(folder_name, lambda_invocation_url)
 print(lambda_invocation_url)
