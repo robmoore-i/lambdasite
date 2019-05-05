@@ -1,7 +1,7 @@
 page_name=`pwd | xargs basename`
 mkdir -p build
 timestamp=`date -Iseconds | cut -c1-19`
-archive_zip_file="build/${page_name}-webpage-${timestamp}.zip"
+archive_zip_file="build/${page_name}-${timestamp}.zip"
 source_files=`ls src`
 
 # Copy-spill source files into current directory
@@ -24,4 +24,4 @@ do
     rm $source_file
 done
 
-aws lambda update-function-code --function-name ${page_name}-webpage --zip-file fileb://$archive_zip_file --publish
+aws lambda update-function-code --function-name ${page_name} --zip-file fileb://$archive_zip_file --publish
