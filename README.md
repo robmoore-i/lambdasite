@@ -4,7 +4,7 @@
 
 To create a new web page, run `python3 create-page.py <page name>`.
 
-This will create a lambda, served through API gateway, and a folder for lambda. The lambda serves a HTML document found at `<page name>/src/document.html`. There is a script `<page name>/update-lambda.sh` which will automatically update the live lambda.
+This will create a lambda, served through API gateway, and a folder for lambda. The lambda serves a HTML document found at `<page name>-website/src/document.html`. There is a script `<page name>-website/update-lambda.sh` which will automatically update the live lambda.
 
 Each page's folder contains a file called `endpoint` which contains the URL from which the page is accessible.
 
