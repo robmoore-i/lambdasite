@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Lambdasite</title>
-    </head>
-    <body>
-        <h1>Lambdasite</h1>
-        <p>
-            The repository for this tool is at:
-            <a href="https://github.com/robmoore-i/lambdasite">https://github.com/robmoore-i/lambdasite</a>
-            <br/>
-            <br/>
-            It is a few scripts and supporting resources which make it easy for me to create very cheaply
-            hosted documents on the internet using AWS Lambda. This is essentially a very shitty version of
-            <a href="https://claudiajs.com/">Claudia.js</a> which was shown to me by
-            <a href="https://gojko.net/">Gojko Adzic</a> at <a href="https://citconf.com/">CITCON</a> in May 2018.
-            It was interesting to learn about all the API gateway stuff that goes into getting a live lambda.
-            <br/>
-            <br/>
-            For example, this web page was created like this:
-            <pre>
-python3 create-page.py lambdasite
-cd lambdasite-webpage
-* edit src/document.html *
-./update-lambda.sh
-            </pre>
-            I am using this collection of webpages to cheaply upload my thoughts to the internet,
-            as though enough people didn't do that already.
-        </p>
-    </body>
+
+<head>
+    <title>Lambdasite</title>
+</head>
+
+<body bgcolor="#f9f9f9">
+    <h4 align="center">Sun 5th May 2019</h4>
+    <h1 align="center">Lambdasite</h1>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">What's this?</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        It's a few scripts and supporting resources which make it easy for me to create cheaply
+        hosted documents on the internet using AWS Lambda. This can be done with a much better called
+        <a href="https://claudiajs.com/">Claudia.js</a> which was shown to me by
+        <a href="https://gojko.net/">Gojko Adzic</a> at <a href="https://citconf.com/">CITCON</a> in May 2018.
+        It was interesting to learn about all the API gateway stuff that goes into getting a live lambda.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        The repository for this tool is at: <a
+            href="https://github.com/robmoore-i/lambdasite">https://github.com/robmoore-i/lambdasite</a>
+    </p>
+    <pre
+        style="margin-left: 30%; margin-right: 30%; border-style: solid; border-width: 1px; border-color: black; border-radius: 5px; font-size: 150%; padding: 10px">
+rob$ python3 create-page.py lambdasite
+rob$ cd lambdasite-webpage
+rob$ * edit src/document.html *
+rob$ ./update-lambda.sh</pre>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Why?</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        I am using this collection of webpages to cheaply upload my thoughts to the internet,
+        as though enough people didn't do that already.
+    </p>
+</body>
+
 </html>
