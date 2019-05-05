@@ -72,7 +72,7 @@ def copy_initial_page_folder(folder_name):
 
 def update_page_folder_endpoint_file(folder_name, lambda_invocation_url):
     with open(os.path.join(folder_name, "endpoint"), "w") as endpoint_file:
-        endpoint_file.write(lambda_invocation_url)
+        endpoint_file.write(lambda_invocation_url + "\n")
 
 api_id = create_new_api_gateway(page_name)
 root_resource_id = get_root_resource_id(api_id)
