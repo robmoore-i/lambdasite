@@ -17,5 +17,5 @@ def test_page_creation(page_name):
     subprocess.check_call(cmd, shell=True)
     print("\tDone")
 
-test_page_creation("lambdasite")
+test_page_creation("lambdathing")
 exit(0)
