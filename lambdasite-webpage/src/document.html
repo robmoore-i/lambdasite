@@ -5,6 +5,27 @@
     </head>
     <body>
         <h1>Lambdasite</h1>
-        <p>Text goes here</p>
+        <p>
+            The repository for this tool is at:
+            <a href="https://github.com/robmoore-i/lambdasite">https://github.com/robmoore-i/lambdasite</a>
+            <br/>
+            <br/>
+            It is a few scripts and supporting resources which make it easy for me to create very cheaply
+            hosted documents on the internet using AWS Lambda. This is essentially a very shitty version of
+            <a href="https://claudiajs.com/">Claudia.js</a> which was shown to me by
+            <a href="https://gojko.net/">Gojko Adzic</a> at <a href="https://citconf.com/">CITCON</a> in May 2018.
+            It was interesting to learn about all the API gateway stuff that goes into getting a live lambda.
+            <br/>
+            <br/>
+            For example, this web page was created like this:
+            <pre>
+python3 create-page.py lambdasite
+cd lambdasite-webpage
+* edit src/document.html *
+./update-lambda.sh
+            </pre>
+            I am using this collection of webpages to cheaply upload my thoughts to the internet,
+            as though enough people didn't do that already.
+        </p>
     </body>
 </html>
