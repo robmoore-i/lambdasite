@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PNG processing in Q</title>
+</head>
+
+<body bgcolor="#f9f9f9">
+    <h4 align="center">Written December 2017. Copied here with a few edits on Fri 10th May, 2019</h4>
+    <h1 align="center">PNG processing in Q</h1>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        This is meant to be the kind of thing I'd have hoped to find while trawling
+        the web for helpful stuff to read, containing nuances of the solution that took
+        longer to find than others.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Motivation</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        At the start of my image deblurring university group project, I was tasked with
+        blurring some images. An image, at the pixel level, is essentially three matricies
+        representing the red, green and blue contributions to the colours of every pixel,
+        so q seemed like a clear choice. However, since there was no png library for q
+        I had to settle for using <a href="https://www.imagemagick.org/script/index.php">
+            imagemagick</a> and no other image transformation libraries comparable to the
+        vast army of libraries available in python using scipy, opencv etc.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Libpng</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        <a href="http://www.libpng.org/pub/png/libpng.html">Libpng</a> is a C library
+        which acts as the official reference library for PNG images. I chose this
+        library to interface into q because it was well supported and the de facto
+        standard for png libraries. It is available from the ubuntu package manager
+        for download as well, which is handy for build automation.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">First impressions of Q's C API</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        I found it was very easy to pick up. The central structure is a K, which as the
+        <a href="http://code.kx.com/q/interfaces/capiref/">reference documentation</a>
+        will inform you is a <a href="https://en.wikipedia.org/wiki/Tagged_union">tagged union</a>,
+        which basically means that it encapsulates multiple types as well as some other
+        clever stuff which I don't know anything about.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        Any function you intend to bind to an actual q session must have return type K
+        it must take at least one argument, and all the arguments must have type K. Now
+        just because you say K myfunction(K x) {...}, it doesn't mean you can't define
+        functions without arguments. The q side of the binding would let you call
+        myfunction without arguments and would behave.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        Being a writer primarily of elegant, high level programs, my approach to using
+        these bindings has been that when I'm writing C, "war is war". Whatever abomination
+        comes out the other side has only the requirements of speed and functionality.
+        But when you're writing the q side of the binding, everything should be easy to use
+        for consumers.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Compiling</h3>
+    <ul style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        <li>I saw 'cc' in the docs
+            <a href="http://code.kx.com/q/interfaces/using-c-functions/">here</a> and it
+            worked first time, but I mistyped with gcc or it didn't want to behave or
+            something - I don't know. If I don't have to deal with tools' temper tantrums
+            then I just dont. I went with cc.</li>
+        <li>Your C is to be compiled into a shared library, so you have to specify
+            this to the compiler. I'm not sure about this, but I think it is necessary to
+            ensure that the compiled object has the .so file extension.</li>
+        <li>You must tell the compiler which installed libraries you want the shared
+            object to be linked to, otherwise it won't know and your stuff won't work. This
+            is done with the -l option, which (at least with cc) must be placed at the end
+            of the line. The -l option is then given the name of the library you need to
+            link to. If "lib" are the first three characters of your library, omit them.</li>
+        <li>After everything is all dandy and works, experiment with the -O family of
+            options to improve your code's performance.</li>
+        <li>You may need to specify the option -DKXVER=3 unless you include the line
+            #define KXVER 3 in your C file before you include k.h. Or something other than
+            3 if that's what you're into.</li>
+        <li>When q is trying to read from shared objects, it looks in the directory of
+            the q executable, so they must end up there to be useful.</li>
+    </ul>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        My compile script looks like this:
+    </p>
+    <pre
+        style="margin-left: 30%; margin-right: 30%; border-style: solid; border-width: 1px; border-color: black; border-radius: 5px; font-size: 150%; padding: 10px">
+#!/bin/bash
+sharedlibname="$QHOME/l64/$(basename $1 .c).so"
+cc -O1 -I. -fPIC -shared -o $sharedlibname $1 -lpng16
+exit 0</pre>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        A simple line by line:
+    </p>
+    <ol style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        <li>Interpret with bash, the default.</li>
+        <li>The shared lib should be saved as (in this case) "/home/rob/q/l64/libpngk.so"</li>
+        <li>Compile with a few options.</li>
+        <li>Get outta there.</li>
+    </ol>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Binding</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        It was pretty easy to get something that worked to be honest. I just did what
+        the <a href="http://code.kx.com/q/interfaces/using-c-functions/">docs</a> told
+        me to do.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        Taken from my git history, here's the first thing I got to behave.
+    </p>
+    <ul style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        <li>
+            Note that the "five" function is defined to take an argument x, but it's unused. This
+            is because of what I mentioned in the "First impressions" section. Your binding
+            functions must take at least one argument.
+        </li>
+        <li>Note also that at this time I was compiling with the -DKXVER=3 option. I don't
+            anymore, and so I've put the #define in here and compiled without the flag. Let this
+            file be called libpngk.c
+        </li>
+    </ul>
+    <pre
+        style="margin-left: 30%; margin-right: 30%; border-style: solid; border-width: 1px; border-color: black; border-radius: 5px; font-size: 150%; padding: 10px">
+#define KXVER 3
+#include "k.h"
+#include<png.h> // Just to make sure that this png header is okay.
+
+K five(K x) {
+    return ki(5);
+}</pre>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        From here my terminal might look something like:
+    </p>
+    <pre
+        style="margin-left: 30%; margin-right: 30%; border-style: solid; border-width: 1px; border-color: black; border-radius: 5px; font-size: 150%; padding: 10px">
+$rob # Does the compiling things I specified before.
+$rob ./compile-shared-lib.sh libpngk.c
+$rob q64
+q)// Open the shared library and get me the function "five"
+q)five:(`libpngk 2: (`five;1))
+q)five[] // Fingers crossed...
+5
+q)// Hooray!</pre>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        Once you get the first iteration of something new in, things start moving a lot
+        faster. All this compiling and linking stuff, well it's all interesting, but it's
+        not all that close to our mission.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">A first use of libpng</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        As above regarding the C API, I began by dipping my toe into libpng because I
+        just wanted a program whose output I could predict to confirm that I was on the
+        right lines. That's science!
+    </p>
+
+
+    <pre
+        style="margin-left: 30%; margin-right: 30%; border-style: solid; border-width: 1px; border-color: black; border-radius: 5px; font-size: 150%; padding: 10px">
+...
+K version(K x) {
+  return kp(PNG_LIBPNG_VER_STRING);
+}</pre>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        This does what it says on the tin. Now we can start implementing the functions
+        we actually want.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">K strings vs symbols</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        In C, strings are null terminated - that is, the last character in a string is
+        always a null character - "\0". C inbuilt functions therefore expect char*
+        (the equivilant of a string) arguments to be null terminated.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        In the q C API, for x of type K, x->s produces the symbol representation of x,
+        which is an alias of C*, where C is an alias of char. Another way to get a C*
+        from x is to do kC(x), which produces a list of chars from a char list in K.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        if "string" is passed to a C API function as x, then:
+        x->s is "string\0" NB. Null terminated
+        kC(x) is "string" NB. Not null terminated
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        When we are passing a char* to a C function, we want a null terminated string,
+        so we can either use x->s on it's own, or use kC(x) and manually append the
+        null terminator. Note that all symbols are
+        <a href="https://en.wikipedia.org/wiki/String_interning">interned</a> and
+        retained for the lifetime of the process. For ease of use, I went for using a
+        symbol and in the C code I just used x->s.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        Checking the validity of a PNG and reading the dimensions was a fairly easy
+        cut and paste job from various internet sources, and integrating this into
+        q was again a simple case of using the C API docs. They really are quite good.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Reading pixels</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        This is where the docs get insufficient/ambiguous. What I want is some kind of
+        matrix representation of the red, green and blue pixel values, similar to what
+        I get when I use python's scipy.misc.imread function, which is:
+    </p>
+    <pre
+        style="margin-left: 30%; margin-right: 30%; border-style: solid; border-width: 1px; border-color: black; border-radius: 5px; font-size: 150%; padding: 10px">
+>>> scpm.imread('images/dustin.png')
+array([[[ 14,  13,  14, 255],
+        [ 14,  13,  14, 255],
+        [ 14,  13,  14, 255],
+        ...,
+        [ 14,  13,  14, 255],
+        [ 14,  13,  14, 255],
+        [ 14,  13,  14, 255]],
+
+       [[ 14,  13,  14, 255],
+        [ 14,  13,  14, 255],
+        [ 14,  13,  14, 255],
+        ...
+        etc.</pre>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        From various internet sources I managed to produce a way method of iterating
+        over the pixels. I won't give all the exact code, it's all in the
+        <a href="https://github.com/robknows/qng">repo</a> anyway.
+    </p>
+    <ol style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        <li>Check that the file is a valid png and open it</li>
+        <li>Initialise and populate the png_ptr and info_ptr structs</li>
+        <li>Prepare the io operations</li>
+        <li>Read the PNG header chunk</li>
+        <li>Initialise the row pointers</li>
+        <li>Read the image into the row pointers</li>
+        <li>You can now iterate over the row pointers</li>
+    </ol>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Returning a K</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        We need to return a K. What exactly we return to users is a design choice I'd
+        rather make in the q code, and if performance requirements demand that I make
+        it faster, I'll move those choices into the C code. I opted to return a mixed
+        list of 3 matrices containing red, green and blue pixel values respectively.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        To make a vector in q you can use the ktn(type, length) constructor. Note that
+        it is better to predefine the length you require in advance, which provides a
+        significant performance boost (Took my aggregated speed results from 160ms to
+        100ms). After creating the vector, we can access and assign into it using fields
+        of the K struct. In this case we want the byte (G) array, so we do x->G0 to get
+        the byte vector of x. We then index into it as appropriate and make the
+        assignment. My solution uses three byte vectors, one for each of red, green and
+        blue.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        On the q side we don't actually want to return bytes, we want numbers between
+        0 and 255 - short integers (type "H"). Unfortunately returning shorts directly
+        from the C code doesn't work - it gives you jibberish. Hence I convert to short
+        integers on the q side of things.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">Writing pixels</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        Writing pixels was a fairly simple cut & paste from the internet job after I knew
+        how to index into the buffer of pixel values, as per the pixel reading. I assume
+        values passed to the C function are short integer vectors. It is necessary to do
+        the casting to the correct numeric type before passing to the C function or it
+        will produce jibberish/not work.
+    </p>
+    <h3 style="color: orange; margin-left: 30%; margin-right: 30%">API</h3>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        I chose to use a dictionary of `r`g`b!(pixel matrices) because it's a fairly
+        straightforward model of the image. I also quite like the idea of using a table
+        with schema (x, y, r, g, b), but I'm not sure about the performance implications
+        of such a design, so I haven't done it yet. After implementing some
+        transformations like guassian blur, reflections, negatives etc. I'll do some
+        benchmarks comparing the dictionary of matrices vs table of pixels storage
+        methods.
+    </p>
+    <p style="margin-left: 30%; margin-right: 30%; line-height: 2">
+        There's more detail in the <a href="https://github.com/robknows/qng">repository</a>
+    </p>
+</body>
+
+</html>
