@@ -1,6 +1,7 @@
 import subprocess
 import requests
 
+
 def check_request_content_matches_file(filename, url):
     response = requests.get(url)
     expected_text = ""
@@ -25,6 +26,7 @@ def test_page_creation(page_name):
     cmd = "python3 delete-page.py " + page_name
     subprocess.check_call(cmd, shell=True)
     print("\tDone")
+
 
 test_page_creation("lambdathing")
 exit(0)
